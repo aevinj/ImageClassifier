@@ -31,6 +31,9 @@ class ImageClassifier:
     
     def get_LOGS_DIRECTORY(self):
         return self.LOGS_DIRECTORY
+    
+    def set_model(self, model):
+        self.model = model
 
     def get_file_extension(self, file_path):
         # Split the file path into its base name and extension
@@ -117,6 +120,7 @@ class ImageClassifier:
     def trainModel(self):
         tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=self.get_LOGS_DIRECTORY())
         training_history = self.model.fit(self.train, epochs=20, validation_data=self.validate, callbacks=[tensorboard_callback])
+        self.saveModel()
         
         # fig = plt.figure()
         # plt.plot(training_history.history['loss'], color='teal', label='loss')
@@ -125,10 +129,28 @@ class ImageClassifier:
         # plt.legend(loc="upper left")
         # plt.show()
         
+    def testModel(self, img):
+        resize = tf.image.resize(img, (256,256))
+        yhat = self.model.predict(np.expand_dims(resize/255, 0))
+        if yhat > 0.5: 
+            print(f'Predicted class is Fish')
+        else:
+            print(f'Predicted class is Hamster')
+            
+    def saveModel(self):
+        self.model.save('ImageClassifier.keras')
+        
 if __name__ == '__main__':
     ic = ImageClassifier()
-    ic.cleanDataset()
-    ic.loadDataset()
-    ic.split_and_partition_dataset()
-    ic.buildModel()
-    ic.trainModel()
+    if os.path.exists('ImageClassifier.keras'):
+        ic.set_model(tfModels.load_model('ImageClassifier.keras'))
+        ic.testModel(img = cv2.imread('fish.jpeg'))
+        ic.testModel(img = cv2.imread('hamster.jpeg'))
+    else:
+        ic.cleanDataset()
+        ic.loadDataset()
+        ic.split_and_partition_dataset()
+        ic.buildModel()
+        ic.trainModel()
+        ic.testModel(img = cv2.imread('fish.jpeg'))
+        ic.testModel(img = cv2.imread('hamster.jpeg'))
