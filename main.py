@@ -1,4 +1,8 @@
 import tensorflow as tf
+from tensorflow import keras
+from keras import models as tfModels
+from keras import layers as tfLayers
+from keras import utils as tfUtils
 from matplotlib import pyplot as plt
 import cv2, os, subprocess
 import numpy as np
@@ -14,8 +18,9 @@ class ImageClassifier:
         self.validation_size = None             # Defined in split dataset function
         self.testing_size = None                # Defined in split dataset function
         self.train = None                       # Defined in partition data function
-        self.validate = None                  # Defined in partition data function
+        self.validate = None                    # Defined in partition data function
         self.test = None                        # Defined in partition data function
+        self.model = None                       # Defined in build model function
 
     def get_DATA_DIRECTORY(self):
         return self.DATA_DIRECTORY
@@ -48,7 +53,7 @@ class ImageClassifier:
                     os.remove(image_path)
                     
     def loadDataset(self):
-        data = tf.keras.utils.image_dataset_from_directory(self.get_DATA_DIRECTORY())
+        data = tfUtils.image_dataset_from_directory(self.get_DATA_DIRECTORY())
         data = data.map(lambda x, y: (x / 255, y))
         self.data = data
         # data_iterator = data.as_numpy_iterator()
@@ -91,13 +96,26 @@ class ImageClassifier:
         self.validate = self.data.skip(self.training_size).take(self.validation_size)
         self.test = self.data.skip(self.training_size + self.validation_size).take(self.testing_size)
         
+    def buildModel(self):
+        model = tfModels.Sequential([tfLayers.Conv2D(16, (3,3), 1, activation='relu', input_shape=(256,256,3)),
+                                     tfLayers.MaxPool2D(),
+                                     tfLayers.Conv2D(32, (3,3), 1, activation='relu'),
+                                     tfLayers.MaxPool2D(),
+                                     tfLayers.Conv2D(16, (3,3), 1, activation='relu'),
+                                     tfLayers.MaxPool2D(),
+                                     tfLayers.Flatten(),
+                                     tfLayers.Dense(256, activation='relu'),
+                                     tfLayers.Dense(1, activation='sigmoid')
+                                     ])
+        model.compile('adam', loss=tf.losses.BinaryCrossentropy(), metrics=['accuracy'])
+        self.model = model
+    
+    def trainModel(self):
+        pass
         
-        
-
-        
-                    
 if __name__ == '__main__':
     ic = ImageClassifier()
     #ic.cleanDataset()
-    ic.loadDataset()
-    ic.split_and_partition_dataset()
+    #ic.loadDataset()
+    #ic.split_and_partition_dataset()
+    #ic.buildModel()
