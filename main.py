@@ -10,6 +10,7 @@ import numpy as np
 class ImageClassifier:
     def __init__(self) -> None:
         self.DATA_DIRECTORY = 'data'
+        self.LOGS_DIRECTORY = 'logs'
         # Supported image formats: jpeg, png, bmp - for keras
         # png causing libpng errors so disregarded as well
         self.IMG_EXTENSIONS = ['jpeg', 'bmp']
@@ -27,6 +28,9 @@ class ImageClassifier:
     
     def get_IMG_EXTENSIONS(self):
         return self.IMG_EXTENSIONS
+    
+    def get_LOGS_DIRECTORY(self):
+        return self.LOGS_DIRECTORY
 
     def get_file_extension(self, file_path):
         # Split the file path into its base name and extension
@@ -111,11 +115,20 @@ class ImageClassifier:
         self.model = model
     
     def trainModel(self):
-        pass
+        tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=self.get_LOGS_DIRECTORY())
+        training_history = self.model.fit(self.train, epochs=20, validation_data=self.validate, callbacks=[tensorboard_callback])
+        
+        # fig = plt.figure()
+        # plt.plot(training_history.history['loss'], color='teal', label='loss')
+        # plt.plot(training_history.history['val_loss'], color='orange', label='val_loss')
+        # fig.suptitle('Loss', fontsize=20)
+        # plt.legend(loc="upper left")
+        # plt.show()
         
 if __name__ == '__main__':
     ic = ImageClassifier()
-    #ic.cleanDataset()
-    #ic.loadDataset()
-    #ic.split_and_partition_dataset()
-    #ic.buildModel()
+    ic.cleanDataset()
+    ic.loadDataset()
+    ic.split_and_partition_dataset()
+    ic.buildModel()
+    ic.trainModel()
