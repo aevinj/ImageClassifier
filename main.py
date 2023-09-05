@@ -13,7 +13,10 @@ class ImageClassifier:
         self.training_size = None               # Defined in split dataset function
         self.validation_size = None             # Defined in split dataset function
         self.testing_size = None                # Defined in split dataset function
-            
+        self.train = None                       # Defined in partition data function
+        self.validate = None                  # Defined in partition data function
+        self.test = None                        # Defined in partition data function
+
     def get_DATA_DIRECTORY(self):
         return self.DATA_DIRECTORY
     
@@ -48,9 +51,12 @@ class ImageClassifier:
         data = tf.keras.utils.image_dataset_from_directory(self.get_DATA_DIRECTORY())
         data = data.map(lambda x, y: (x / 255, y))
         self.data = data
-        self.splitDataset(len(self.data))
         # data_iterator = data.as_numpy_iterator()
         # batch = data_iterator.next()
+        
+    def split_and_partition_dataset(self):
+        self.splitDataset(len(self.data))
+        self.partitionDataset()
         
     def splitDataset(self, total_batches):
         training_split = 0.7
@@ -80,6 +86,11 @@ class ImageClassifier:
         self.validation_size = validation_batches
         self.testing_size = testing_batches
         
+    def partitionDataset(self):
+        self.train = self.data.take(self.training_size)
+        self.validate = self.data.skip(self.training_size).take(self.validation_size)
+        self.test = self.data.skip(self.training_size + self.validation_size).take(self.testing_size)
+        
         
         
 
@@ -89,3 +100,4 @@ if __name__ == '__main__':
     ic = ImageClassifier()
     #ic.cleanDataset()
     ic.loadDataset()
+    ic.split_and_partition_dataset()
