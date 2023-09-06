@@ -3,6 +3,7 @@ from tensorflow import keras
 from keras import models as tfModels
 from keras import layers as tfLayers
 from keras import utils as tfUtils
+from keras import metrics as tfMetrics
 from matplotlib import pyplot as plt
 import cv2, os, subprocess
 import numpy as np
@@ -128,7 +129,7 @@ class ImageClassifier:
     
     def trainModel(self):
         tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=self.get_LOGS_DIRECTORY())
-        training_history = self.model.fit(self.train, epochs=10, validation_data=self.validate, callbacks=[tensorboard_callback])
+        training_history = self.model.fit(self.train, epochs=3, validation_data=self.validate, callbacks=[tensorboard_callback])
         self.saveModel()
         
         # fig = plt.figure()
@@ -153,7 +154,22 @@ class ImageClassifier:
             print('Predicted class is fish\n')
             
     def saveModel(self):
-        self.model.save('ImageClassifier.keras')
+        #self.model.save('ImageClassifier.keras')
+        pass
+        
+    def evaluateModel(self):
+        pre = tfMetrics.Precision()
+        re = tfMetrics.Recall()
+        acc = tfMetrics.CategoricalAccuracy()
+        
+        for batch in self.test.as_numpy_iterator():
+            x, y = batch
+            yhat = self.model.predict(x)
+            pre.update_state(y, yhat)
+            re.update_state(y, yhat)
+            acc.update_state(y, yhat)
+            
+        print(f'Precision: {pre.result().numpy()}, Recall: {re.result().numpy()}, Accuracy: {acc.result().numpy()}')
         
 if __name__ == '__main__':
     gpus = tf.config.experimental.list_physical_devices('GPU')
@@ -180,15 +196,16 @@ if __name__ == '__main__':
         ic.split_and_partition_dataset()
         ic.buildModel()
         ic.trainModel()
-        print("fish test")
-        ic.testModel(img = cv2.imread('fish.jpeg'))
-        print("dog test")
-        ic.testModel(img = cv2.imread('dog.jpeg'))
-        print("cat test")
-        ic.testModel(img = cv2.imread('cat.jpeg'))
-        print("cat test")
-        ic.testModel(img = cv2.imread('cat2.jpeg'))
-        print("cat test")
-        ic.testModel(img = cv2.imread('cat3.jpeg'))
-        print("fish test")
-        ic.testModel(img = cv2.imread('fish2.jpeg'))
+        ic.evaluateModel()
+        # print("fish test")
+        # ic.testModel(img = cv2.imread('fish.jpeg'))
+        # print("dog test")
+        # ic.testModel(img = cv2.imread('dog.jpeg'))
+        # print("cat test")
+        # ic.testModel(img = cv2.imread('cat.jpeg'))
+        # print("cat test")
+        # ic.testModel(img = cv2.imread('cat2.jpeg'))
+        # print("cat test")
+        # ic.testModel(img = cv2.imread('cat3.jpeg'))
+        # print("fish test")
+        # ic.testModel(img = cv2.imread('fish2.jpeg'))
