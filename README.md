@@ -1,4 +1,4 @@
-# Image Classifier
+# Multiclass Image Classification
 
 Made solely by Aevin Jais
 
