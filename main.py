@@ -6,7 +6,7 @@ from keras import metrics as tfMetrics
 from keras.optimizers import Adam
 from keras.layers import Conv2D, Dense, Flatten, MaxPooling2D, Dropout
 from matplotlib import pyplot as plt
-import cv2, os, subprocess
+import cv2, os
 import numpy as np
 
 class ImageClassifier:
@@ -178,25 +178,32 @@ class ImageClassifier:
             
         print(f'Precision: {pre.result().numpy()}, Recall: {re.result().numpy()}, Accuracy: {acc.result().numpy()}')
         
+
+def testOnUnseenImages(ic):
+    print("Fish test:")
+    ic.testModel(img = cv2.imread('fish.jpeg'))
+    print("Dog test:")
+    ic.testModel(img = cv2.imread('dog.jpeg'))
+    print("Cat test:")
+    ic.testModel(img = cv2.imread('cat.jpeg'))
+    print("Cat test:")
+    ic.testModel(img = cv2.imread('cat2.jpeg'))
+    print("Cat test:")
+    ic.testModel(img = cv2.imread('cat3.jpeg'))
+    print("Fish test:")
+    ic.testModel(img = cv2.imread('fish2.jpeg'))
+
 if __name__ == '__main__':
+    # In order to avoid OOM errors
     gpus = tf.config.experimental.list_physical_devices('GPU')
     for gpu in gpus:
         tf.config.experimental.set_memory_growth(gpu, True)
+        
+        
     ic = ImageClassifier()
     if os.path.exists('ImageClassifier.keras'):
         ic.set_model(tfModels.load_model('ImageClassifier.keras'))
-        print("fish test")
-        ic.testModel(img = cv2.imread('fish.jpeg'))
-        print("dog test")
-        ic.testModel(img = cv2.imread('dog.jpeg'))
-        print("cat test")
-        ic.testModel(img = cv2.imread('cat.jpeg'))
-        print("cat test")
-        ic.testModel(img = cv2.imread('cat2.jpeg'))
-        print("cat test")
-        ic.testModel(img = cv2.imread('cat3.jpeg'))
-        print("fish test")
-        ic.testModel(img = cv2.imread('fish2.jpeg'))
+        testOnUnseenImages(ic)
     else:
         ic.cleanDataset()
         ic.loadDataset()
@@ -204,15 +211,4 @@ if __name__ == '__main__':
         ic.buildModel()
         ic.trainModel()
         ic.evaluateModel()
-        print("fish test")
-        ic.testModel(img = cv2.imread('fish.jpeg'))
-        print("dog test")
-        ic.testModel(img = cv2.imread('dog.jpeg'))
-        print("cat test")
-        ic.testModel(img = cv2.imread('cat.jpeg'))
-        print("cat test")
-        ic.testModel(img = cv2.imread('cat2.jpeg'))
-        print("cat test")
-        ic.testModel(img = cv2.imread('cat3.jpeg'))
-        print("fish test")
-        ic.testModel(img = cv2.imread('fish2.jpeg'))
+        testOnUnseenImages(ic)
