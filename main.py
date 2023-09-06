@@ -178,20 +178,19 @@ class ImageClassifier:
             
         print(f'Precision: {pre.result().numpy()}, Recall: {re.result().numpy()}, Accuracy: {acc.result().numpy()}')
         
-
-def testOnUnseenImages(ic):
-    print("Fish test:")
-    ic.testModel(img = cv2.imread('fish.jpeg'))
-    print("Dog test:")
-    ic.testModel(img = cv2.imread('dog.jpeg'))
-    print("Cat test:")
-    ic.testModel(img = cv2.imread('cat.jpeg'))
-    print("Cat test:")
-    ic.testModel(img = cv2.imread('cat2.jpeg'))
-    print("Cat test:")
-    ic.testModel(img = cv2.imread('cat3.jpeg'))
-    print("Fish test:")
-    ic.testModel(img = cv2.imread('fish2.jpeg'))
+    def testOnUnseenImages(self):
+        print("Fish test:")
+        self.testModel(img = cv2.imread(os.path.join('test_images','fish.jpeg')))
+        print("Dog test:")
+        self.testModel(img = cv2.imread(os.path.join('test_images','dog.jpeg')))
+        print("Cat test:")
+        self.testModel(img = cv2.imread(os.path.join('test_images','cat.jpeg')))
+        print("Cat test:")
+        self.testModel(img = cv2.imread(os.path.join('test_images','cat2.jpeg')))
+        print("Cat test:")
+        self.testModel(img = cv2.imread(os.path.join('test_images','cat3.jpeg')))
+        print("Fish test:")
+        self.testModel(img = cv2.imread(os.path.join('test_images','fish2.jpeg')))
 
 if __name__ == '__main__':
     # In order to avoid OOM errors
@@ -199,11 +198,10 @@ if __name__ == '__main__':
     for gpu in gpus:
         tf.config.experimental.set_memory_growth(gpu, True)
         
-        
     ic = ImageClassifier()
     if os.path.exists('ImageClassifier.keras'):
         ic.set_model(tfModels.load_model('ImageClassifier.keras'))
-        testOnUnseenImages(ic)
+        ic.testOnUnseenImages()
     else:
         ic.cleanDataset()
         ic.loadDataset()
@@ -211,4 +209,4 @@ if __name__ == '__main__':
         ic.buildModel()
         ic.trainModel()
         ic.evaluateModel()
-        testOnUnseenImages(ic)
+        ic.testOnUnseenImages()
