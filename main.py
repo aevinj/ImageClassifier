@@ -1,10 +1,10 @@
 import tensorflow as tf
 from tensorflow import keras
 from keras import models as tfModels
-from keras import layers as tfLayers
 from keras import utils as tfUtils
 from keras import metrics as tfMetrics
-from keras.optimizers import Adam, RMSprop, Adagrad, SGD
+from keras.optimizers import Adam
+from keras.layers import Conv2D, Dense, Flatten, MaxPooling2D, Dropout
 from matplotlib import pyplot as plt
 import cv2, os, subprocess
 import numpy as np
@@ -107,32 +107,41 @@ class ImageClassifier:
         
     def buildModel(self):
         model = keras.Sequential([
-            tfLayers.Conv2D(32, (3, 3), activation='relu', input_shape=(256, 256, 3)),
-            tfLayers.MaxPooling2D((2, 2)),
-            
-            tfLayers.Conv2D(64, (3, 3), activation='relu'),
-            tfLayers.MaxPooling2D((2, 2)),
-            
-            tfLayers.Conv2D(128, (3, 3), activation='relu'),
-            tfLayers.MaxPooling2D((2, 2)),
-            
-            tfLayers.Flatten(),
-            tfLayers.Dropout(0.5),
-            
-            tfLayers.Dense(512, activation='relu'),
-            tfLayers.Dense(3, activation='softmax')  # 3 classes (dogs, cats, fish)
+            Conv2D(64, (3, 3), activation='relu', input_shape=(256, 256, 3)),
+            MaxPooling2D((2, 2)),
+        
+            Conv2D(128, (3, 3), activation='relu'),
+            MaxPooling2D((2, 2)),
+        
+            Conv2D(256, (3, 3), activation='relu'),
+            MaxPooling2D((2, 2)),
+        
+            Conv2D(512, (3, 3), activation='relu'),
+            MaxPooling2D((2, 2)),
+        
+            Flatten(),
+            Dropout(0.5),
+        
+            Dense(1024, activation='relu'),
+            Dropout(0.5),
+        
+            Dense(512, activation='relu'),
+            Dropout(0.5),
+        
+            Dense(3, activation='softmax')  # 3 classes (dogs, cats, fish)
         ])
+
         model.compile(optimizer=Adam(learning_rate=0.001), loss='categorical_crossentropy', metrics=['accuracy'])
         self.model = model
     
     def trainModel(self):
         tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=self.get_LOGS_DIRECTORY())
-        training_history = self.model.fit(self.train, epochs=4, validation_data=self.validate, callbacks=[tensorboard_callback])
+        training_history = self.model.fit(self.train, epochs=8, validation_data=self.validate, callbacks=[tensorboard_callback])
         self.saveModel()
         
         fig = plt.figure()
-        plt.plot(training_history.history['accuracy'], color='teal', label='loss')
-        plt.plot(training_history.history['val_accuracy'], color='orange', label='val_loss')
+        plt.plot(training_history.history['accuracy'], color='teal', label='accuracy')
+        plt.plot(training_history.history['val_accuracy'], color='orange', label='val_accuracy')
         fig.suptitle('Accuracy', fontsize=20)
         plt.legend(loc="upper left")
         plt.show()
