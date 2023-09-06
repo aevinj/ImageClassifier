@@ -105,31 +105,28 @@ class ImageClassifier:
         self.test = self.data.skip(self.training_size + self.validation_size).take(self.testing_size)
         
     def buildModel(self):
-        model = tfModels.Sequential()
-        activation = 'sigmoid'
-        model.add(tfLayers.Conv2D(32, 3, activation = activation, padding = 'same', input_shape = (256, 256, 3)))
-        model.add(tfLayers.BatchNormalization())
-
-        model.add(tfLayers.Conv2D(32, 3, activation = activation, padding = 'same', kernel_initializer = 'he_uniform'))
-        model.add(tfLayers.BatchNormalization())
-        model.add(tfLayers.MaxPooling2D())
-
-        model.add(tfLayers.Conv2D(64, 3, activation = activation, padding = 'same', kernel_initializer = 'he_uniform'))
-        model.add(tfLayers.BatchNormalization())
-
-        model.add(tfLayers.Conv2D(64, 3, activation = activation, padding = 'same', kernel_initializer = 'he_uniform'))
-        model.add(tfLayers.BatchNormalization()) 
-        model.add(tfLayers.MaxPooling2D())
-
-        model.add(tfLayers.Flatten())
-        model.add(tfLayers.Dense(128, activation = activation, kernel_initializer = 'he_uniform'))
-        model.add(tfLayers.Dense(3, activation = 'softmax'))
-        model.compile('rmsprop', loss='categorical_crossentropy', metrics=['accuracy'])
+        model = keras.Sequential([
+            tfLayers.Conv2D(32, (3, 3), activation='relu', input_shape=(256, 256, 3)),
+            tfLayers.MaxPooling2D((2, 2)),
+            
+            tfLayers.Conv2D(64, (3, 3), activation='relu'),
+            tfLayers.MaxPooling2D((2, 2)),
+            
+            tfLayers.Conv2D(128, (3, 3), activation='relu'),
+            tfLayers.MaxPooling2D((2, 2)),
+            
+            tfLayers.Flatten(),
+            tfLayers.Dropout(0.5),
+            
+            tfLayers.Dense(512, activation='relu'),
+            tfLayers.Dense(3, activation='softmax')  # 3 classes (dogs, cats, fish)
+        ])
+        model.compile('adam', loss='categorical_crossentropy', metrics=['accuracy'])
         self.model = model
     
     def trainModel(self):
         tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=self.get_LOGS_DIRECTORY())
-        training_history = self.model.fit(self.train, epochs=3, validation_data=self.validate, callbacks=[tensorboard_callback])
+        training_history = self.model.fit(self.train, epochs=10, validation_data=self.validate, callbacks=[tensorboard_callback])
         self.saveModel()
         
         # fig = plt.figure()
@@ -154,8 +151,8 @@ class ImageClassifier:
             print('Predicted class is fish\n')
             
     def saveModel(self):
-        #self.model.save('ImageClassifier.keras')
-        pass
+        self.model.save('ImageClassifier.keras')
+        #pass
         
     def evaluateModel(self):
         pre = tfMetrics.Precision()
@@ -197,15 +194,15 @@ if __name__ == '__main__':
         ic.buildModel()
         ic.trainModel()
         ic.evaluateModel()
-        # print("fish test")
-        # ic.testModel(img = cv2.imread('fish.jpeg'))
-        # print("dog test")
-        # ic.testModel(img = cv2.imread('dog.jpeg'))
-        # print("cat test")
-        # ic.testModel(img = cv2.imread('cat.jpeg'))
-        # print("cat test")
-        # ic.testModel(img = cv2.imread('cat2.jpeg'))
-        # print("cat test")
-        # ic.testModel(img = cv2.imread('cat3.jpeg'))
-        # print("fish test")
-        # ic.testModel(img = cv2.imread('fish2.jpeg'))
+        print("fish test")
+        ic.testModel(img = cv2.imread('fish.jpeg'))
+        print("dog test")
+        ic.testModel(img = cv2.imread('dog.jpeg'))
+        print("cat test")
+        ic.testModel(img = cv2.imread('cat.jpeg'))
+        print("cat test")
+        ic.testModel(img = cv2.imread('cat2.jpeg'))
+        print("cat test")
+        ic.testModel(img = cv2.imread('cat3.jpeg'))
+        print("fish test")
+        ic.testModel(img = cv2.imread('fish2.jpeg'))
