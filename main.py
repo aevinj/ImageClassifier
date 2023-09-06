@@ -60,11 +60,11 @@ class ImageClassifier:
                     os.remove(image_path)
                     
     def loadDataset(self):
-        data = tfUtils.image_dataset_from_directory(self.get_DATA_DIRECTORY())
+        data = tfUtils.image_dataset_from_directory(self.get_DATA_DIRECTORY(), label_mode='categorical')
         data = data.map(lambda x, y: (x / 255, y))
         self.data = data
-        # data_iterator = data.as_numpy_iterator()
-        # batch = data_iterator.next()
+        data_iterator = data.as_numpy_iterator()
+        batch = data_iterator.next()
         
     def split_and_partition_dataset(self):
         self.splitDataset(len(self.data))
@@ -112,14 +112,14 @@ class ImageClassifier:
                                      tfLayers.MaxPool2D(),
                                      tfLayers.Flatten(),
                                      tfLayers.Dense(256, activation='relu'),
-                                     tfLayers.Dense(1, activation='sigmoid')
+                                     tfLayers.Dense(3, activation='softmax')
                                      ])
-        model.compile('adam', loss=tf.losses.BinaryCrossentropy(), metrics=['accuracy'])
+        model.compile('adam', loss='categorical_crossentropy', metrics=['accuracy'])
         self.model = model
     
     def trainModel(self):
         tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=self.get_LOGS_DIRECTORY())
-        training_history = self.model.fit(self.train, epochs=20, validation_data=self.validate, callbacks=[tensorboard_callback])
+        training_history = self.model.fit(self.train, epochs=50, validation_data=self.validate, callbacks=[tensorboard_callback])
         self.saveModel()
         
         # fig = plt.figure()
@@ -132,10 +132,16 @@ class ImageClassifier:
     def testModel(self, img):
         resize = tf.image.resize(img, (256,256))
         yhat = self.model.predict(np.expand_dims(resize/255, 0))
-        if yhat > 0.5: 
-            print(f'Predicted class is Fish')
-        else:
-            print(f'Predicted class is Hamster')
+        print("yhat is ", yhat)
+        class_index = np.argmax(yhat)
+        print("class index is ", class_index)
+        
+        if class_index == 0:
+            print('Predicted class is cat\n')
+        elif class_index == 1:
+            print('Predicted class is dog\n')
+        elif class_index == 2:
+            print('Predicted class is hamster\n')
             
     def saveModel(self):
         self.model.save('ImageClassifier.keras')
@@ -145,7 +151,11 @@ if __name__ == '__main__':
     if os.path.exists('ImageClassifier.keras'):
         ic.set_model(tfModels.load_model('ImageClassifier.keras'))
         ic.testModel(img = cv2.imread('fish.jpeg'))
-        ic.testModel(img = cv2.imread('hamster.jpeg'))
+        ic.testModel(img = cv2.imread('dog.jpeg'))
+        ic.testModel(img = cv2.imread('cat.jpeg'))
+        ic.testModel(img = cv2.imread('cat2.jpeg'))
+        ic.testModel(img = cv2.imread('cat3.jpeg'))
+        ic.testModel(img = cv2.imread('fish2.jpeg'))
     else:
         ic.cleanDataset()
         ic.loadDataset()
@@ -153,4 +163,5 @@ if __name__ == '__main__':
         ic.buildModel()
         ic.trainModel()
         ic.testModel(img = cv2.imread('fish.jpeg'))
-        ic.testModel(img = cv2.imread('hamster.jpeg'))
+        ic.testModel(img = cv2.imread('dog.jpeg'))
+        ic.testModel(img = cv2.imread('cat.jpeg'))
