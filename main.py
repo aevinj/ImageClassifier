@@ -131,7 +131,7 @@ class ImageClassifier:
             Dense(3, activation='softmax')  # 3 classes (dogs, cats, fish)
         ])
 
-        model.compile(optimizer=Adam(learning_rate=0.001), loss='categorical_crossentropy', metrics=['accuracy'])
+        model.compile(optimizer=Adam(learning_rate=0.0001), loss='categorical_crossentropy', metrics=['accuracy'])
         self.model = model
     
     def trainModel(self):
