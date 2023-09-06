@@ -4,6 +4,7 @@ from keras import models as tfModels
 from keras import layers as tfLayers
 from keras import utils as tfUtils
 from keras import metrics as tfMetrics
+from keras.optimizers import Adam, RMSprop, Adagrad, SGD
 from matplotlib import pyplot as plt
 import cv2, os, subprocess
 import numpy as np
@@ -121,20 +122,20 @@ class ImageClassifier:
             tfLayers.Dense(512, activation='relu'),
             tfLayers.Dense(3, activation='softmax')  # 3 classes (dogs, cats, fish)
         ])
-        model.compile('adam', loss='categorical_crossentropy', metrics=['accuracy'])
+        model.compile(optimizer=Adam(learning_rate=0.001), loss='categorical_crossentropy', metrics=['accuracy'])
         self.model = model
     
     def trainModel(self):
         tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=self.get_LOGS_DIRECTORY())
-        training_history = self.model.fit(self.train, epochs=10, validation_data=self.validate, callbacks=[tensorboard_callback])
+        training_history = self.model.fit(self.train, epochs=4, validation_data=self.validate, callbacks=[tensorboard_callback])
         self.saveModel()
         
-        # fig = plt.figure()
-        # plt.plot(training_history.history['loss'], color='teal', label='loss')
-        # plt.plot(training_history.history['val_loss'], color='orange', label='val_loss')
-        # fig.suptitle('Loss', fontsize=20)
-        # plt.legend(loc="upper left")
-        # plt.show()
+        fig = plt.figure()
+        plt.plot(training_history.history['accuracy'], color='teal', label='loss')
+        plt.plot(training_history.history['val_accuracy'], color='orange', label='val_loss')
+        fig.suptitle('Accuracy', fontsize=20)
+        plt.legend(loc="upper left")
+        plt.show()
         
     def testModel(self, img):
         resize = tf.image.resize(img, (256,256))
