@@ -141,9 +141,9 @@ class ImageClassifier:
     def testModel(self, img):
         resize = tf.image.resize(img, (256,256))
         yhat = self.model.predict(np.expand_dims(resize/255, 0))
-        #print("yhat is ", yhat)
+        print("yhat is ", yhat)
         class_index = np.argmax(yhat)
-        #print("class index is ", class_index)
+        print("class index is ", class_index)
         
         if class_index == 0:
             print('Predicted class is cat\n')
@@ -156,19 +156,22 @@ class ImageClassifier:
         self.model.save('ImageClassifier.keras')
         
 if __name__ == '__main__':
+    gpus = tf.config.experimental.list_physical_devices('GPU')
+    for gpu in gpus:
+        tf.config.experimental.set_memory_growth(gpu, True)
     ic = ImageClassifier()
     if os.path.exists('ImageClassifier.keras'):
         ic.set_model(tfModels.load_model('ImageClassifier.keras'))
-        # print("fish test")
-        # ic.testModel(img = cv2.imread('fish.jpeg'))
-        # print("dog test")
-        # ic.testModel(img = cv2.imread('dog.jpeg'))
-        # print("cat test")
-        # ic.testModel(img = cv2.imread('cat.jpeg'))
-        # print("cat test")
-        # ic.testModel(img = cv2.imread('cat2.jpeg'))
-        # print("cat test")
-        # ic.testModel(img = cv2.imread('cat3.jpeg'))
+        print("fish test")
+        ic.testModel(img = cv2.imread('fish.jpeg'))
+        print("dog test")
+        ic.testModel(img = cv2.imread('dog.jpeg'))
+        print("cat test")
+        ic.testModel(img = cv2.imread('cat.jpeg'))
+        print("cat test")
+        ic.testModel(img = cv2.imread('cat2.jpeg'))
+        print("cat test")
+        ic.testModel(img = cv2.imread('cat3.jpeg'))
         print("fish test")
         ic.testModel(img = cv2.imread('fish2.jpeg'))
     else:
