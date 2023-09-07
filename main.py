@@ -46,6 +46,9 @@ class ImageClassifier:
         return extension
 
     def cleanDataset(self):
+        if not os.path.exists(self.get_DATA_DIRECTORY()):
+            raise FileNotFoundError("Could not find dataset")
+        
         for image_class in os.listdir(self.get_DATA_DIRECTORY()): 
             for image in os.listdir(os.path.join(self.get_DATA_DIRECTORY(), image_class)):
                 image_path = os.path.join(self.get_DATA_DIRECTORY(), image_class, image)
@@ -197,11 +200,16 @@ if __name__ == '__main__':
     gpus = tf.config.experimental.list_physical_devices('GPU')
     for gpu in gpus:
         tf.config.experimental.set_memory_growth(gpu, True)
-        
+    
     ic = ImageClassifier()
-    if os.path.exists('ImageClassifier.keras'):
-        ic.set_model(tfModels.load_model('ImageClassifier.keras'))
-        ic.testOnUnseenImages()
+    choice = input("\nWould you like to use pretrained model? (y or n)\n").lower()
+    
+    if choice == 'y':
+        if os.path.exists('ImageClassifier.keras'):
+            ic.set_model(tfModels.load_model('ImageClassifier.keras'))
+            ic.testOnUnseenImages()
+        else:
+            raise FileNotFoundError("Pretrained model could not be found\n")
     else:
         ic.cleanDataset()
         ic.loadDataset()
